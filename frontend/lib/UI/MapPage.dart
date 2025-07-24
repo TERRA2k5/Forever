@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:forever/providers/icon_provider.dart';
 import 'package:forever/providers/my_location_provider.dart';
 import 'package:forever/providers/partner_location_provider.dart';
 import 'package:forever/fuctions/sql_functions.dart';
@@ -35,6 +36,16 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   Widget build(BuildContext context) {
     final myLocationAsync = ref.watch(myLocationProvider);
     final partnerLocationAsync = ref.watch(partnerLocationProvider);
+    final myIcon = ref.watch(myIconProvider).maybeWhen(
+      data: (icon) => icon,
+      orElse: () => BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+    );
+
+    final partnerIcon = ref.watch(partnerIconProvider).maybeWhen(
+      data: (icon) => icon,
+      orElse: () => BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+    );
+
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -79,6 +90,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (err, _) => Center(child: Text("Error partnerPosition: $err")),
             data: (partnerPosition) {
+              print("Partner Position: $partnerPosition");
               return GoogleMap(
                 zoomControlsEnabled: false,
                 initialCameraPosition: CameraPosition(
@@ -91,11 +103,13 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 markers: {
                   Marker(
                     markerId: const MarkerId("your_location"),
+                    icon: myIcon,
                     position: LatLng(myPosition.latitude, myPosition.longitude),
                   ),
                   if (partnerPosition != null)
                     Marker(
                       markerId: const MarkerId("partner_location"),
+                      icon: partnerIcon,
                       position: LatLng(partnerPosition.latitude, partnerPosition.longitude),
                     ),
                 },

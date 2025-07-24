@@ -30,6 +30,7 @@ Future<void> saveLocation(
 }
 
 Future<Position?> fetchLocation(String id) async {
+  print('Fetching location for $id');
   try {
     final url = Uri.parse('https://forever-c5as.onrender.com/getLocation');
     final response = await http.post(
@@ -41,13 +42,13 @@ Future<Position?> fetchLocation(String id) async {
     if (response.statusCode == 201) {
       final json = jsonDecode(response.body);
 
-      final lat = json['latitude'];
-      final lon = json['longitude'];
+      final lat = json['data']['latitude'];
+      final lon = json['data']['longitude'];
+      print('Fetched location for ID ${response.body}');
 
       if (lat == null || lon == null) {
         return null;
       }
-
       return Position(
         latitude: lat.toDouble(),
         longitude: lon.toDouble(),
