@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:forever/UI/HomePage.dart';
+import 'package:forever/UI/MapPage.dart';
 import 'package:forever/UI/WelcomePage.dart';
 import 'package:forever/providers/start_up_provider.dart';
 import 'firebase_options.dart';

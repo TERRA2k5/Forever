@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:forever/providers/my_location_provider.dart';
+import 'package:forever/providers/partner_location_provider.dart';
 import 'package:forever/fuctions/sql_functions.dart';
-import 'package:forever/providers/id_provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../fuctions/geolocator_functions.dart';
 
 class MapScreen extends ConsumerStatefulWidget {
   const MapScreen({super.key});
@@ -17,36 +15,27 @@ class MapScreen extends ConsumerStatefulWidget {
 
 class _MapScreenState extends ConsumerState<MapScreen> {
   GoogleMapController? _controller;
-  Position? _myPosition;
-  Position? _partnerPosition;
 
   @override
   void initState() {
     super.initState();
-    _initLocation();
+    _saveMyLocationToBackend();
   }
 
-  Future<void> _initLocation() async {
+  Future<void> _saveMyLocationToBackend() async {
     final prefs = await SharedPreferences.getInstance();
     final myId = prefs.getString('my_id');
-    final partnerId = prefs.getString('partner_id');
-    final myPosition = await getCurrentLocation();
-    final partnerPosition = await fetchLocation(partnerId!);
-    setState(() {
-      _myPosition = myPosition;
-      _partnerPosition = partnerPosition;
-    });
-
-    await saveLocation(myId!, myPosition!.latitude, myPosition!.longitude);
-    await saveLocation(
-      partnerId!,
-      partnerPosition!.latitude,
-      partnerPosition!.longitude,
-    );
+    final position = await ref.read(myLocationProvider.future);
+    if (myId != null) {
+      await saveLocation(myId, position.latitude, position.longitude);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final myLocationAsync = ref.watch(myLocationProvider);
+    final partnerLocationAsync = ref.watch(partnerLocationProvider);
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -67,7 +56,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             ),
           ),
         ),
-
         actions: [
           Container(
             margin: const EdgeInsets.only(right: 10),
@@ -83,36 +71,39 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           ),
         ],
       ),
-      body:
-          _partnerPosition == null && _myPosition == null
-              ? const Center(child: CircularProgressIndicator())
-              : GoogleMap(
+      body: myLocationAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, _) => Center(child: Text("Error myPosition: $err")),
+        data: (myPosition) {
+          return partnerLocationAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, _) => Center(child: Text("Error partnerPosition: $err")),
+            data: (partnerPosition) {
+              return GoogleMap(
                 zoomControlsEnabled: false,
                 initialCameraPosition: CameraPosition(
-                  target: LatLng(
-                    _partnerPosition!.latitude,
-                    _partnerPosition!.longitude,
-                  ),
+                  target: partnerPosition != null
+                      ? LatLng(partnerPosition.latitude, partnerPosition.longitude)
+                      : LatLng(myPosition.latitude, myPosition.longitude),
                   zoom: 15,
                 ),
                 onMapCreated: (controller) => _controller = controller,
                 markers: {
                   Marker(
                     markerId: const MarkerId("your_location"),
-                    position: LatLng(
-                      _myPosition!.latitude,
-                      _myPosition!.longitude,
-                    ),
+                    position: LatLng(myPosition.latitude, myPosition.longitude),
                   ),
-                  Marker(
-                    markerId: const MarkerId("partner_location"),
-                    position: LatLng(
-                      _partnerPosition!.latitude,
-                      _partnerPosition!.longitude,
+                  if (partnerPosition != null)
+                    Marker(
+                      markerId: const MarkerId("partner_location"),
+                      position: LatLng(partnerPosition.latitude, partnerPosition.longitude),
                     ),
-                  ),
                 },
-              ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
