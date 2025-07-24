@@ -1,18 +1,17 @@
-import { Pool } from 'pg'
-import dotenv from 'dotenv'
+import { Pool } from 'pg';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
 const pool = new Pool({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_DATABASE,
-    password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT,
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false,
+    },
 });
 
-pool.on("connected", () => {
-    console.log("connection established with database");
+pool.on('connect', () => {
+    console.log('Connection established with database');
 });
 
 export default pool;
