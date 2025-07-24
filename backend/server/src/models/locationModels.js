@@ -1,6 +1,6 @@
 import pool from '../db.js';
 
-export const addLocationService = async (email, latitude, longitude, id) => {
+export const addLocationService = async (latitude, longitude, id) => {
     const result = await pool.query(
         `INSERT INTO user_positions (latitude, longitude,id)
    VALUES ($1, $2, $3)
