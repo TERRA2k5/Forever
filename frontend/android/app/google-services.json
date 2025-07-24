@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "44117508017",
+    "project_id": "forever-8938b",
+    "storage_bucket": "forever-8938b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:44117508017:android:f316a12e4aa7d1bf390790",
+        "android_client_info": {
+          "package_name": "com.example.forever"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCOZJcleVWtFaoF-bH0jJgohmJj0e2805o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
