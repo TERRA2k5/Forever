@@ -1,12 +1,12 @@
 import pool from '../db.js';
 
-export const addLocationService = async (latitude, longitude, id) => {
+export const addLocationService = async (latitude, longitude, id, fcm) => {
     const result = await pool.query(
         `INSERT INTO user_positions (latitude, longitude,id)
-   VALUES ($1, $2, $3)
+   VALUES ($1, $2, $3, $4)
    ON CONFLICT (id)
    DO UPDATE SET latitude = EXCLUDED.latitude, longitude = EXCLUDED.longitude`,
-        [latitude, longitude, id]
+        [latitude, longitude, id, fcm]
     );
     return result.rowCount;
 }
