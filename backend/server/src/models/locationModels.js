@@ -2,7 +2,7 @@ import pool from '../db.js';
 
 export const addLocationService = async (latitude, longitude, id, fcm) => {
     const result = await pool.query(
-        `INSERT INTO user_positions (latitude, longitude,id)
+        `INSERT INTO user_positions (latitude, longitude, id, fcm)
    VALUES ($1, $2, $3, $4)
    ON CONFLICT (id)
    DO UPDATE SET latitude = EXCLUDED.latitude, longitude = EXCLUDED.longitude`,
@@ -17,4 +17,12 @@ export const getLocationService = async (id) => {
         `, [id]);
 
     return result.rows[0];
+};
+
+export const debug_printAlll = async () => {
+    const result = await pool.query(`
+        SELECT * FROM user_positions;
+        `);
+
+    return result;
 };

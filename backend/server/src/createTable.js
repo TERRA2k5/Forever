@@ -14,7 +14,7 @@ const createUserTable = async () => {
     await pool.query(query);
     console.log("✅ 'user_positions' table created or already exists");
   } catch (err) {
-    console.error("❌ Error creating 'users' table:", err);
+    console.error("❌ Error creating 'user_positions' table:", err);
   }
 };
 

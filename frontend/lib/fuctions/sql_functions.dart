@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import 'package:forever/services/firebase_access_token.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> saveLocation(
   String myId,
@@ -9,7 +11,7 @@ Future<void> saveLocation(
   double longitude,
 ) async {
   final url = Uri.parse('https://forever-c5as.onrender.com/location');
-
+  String accessToken = await FirebaseAccessToken().getAccessToken();
   final response = await http.post(
     url,
     headers: {'Content-Type': 'application/json'},
@@ -17,6 +19,7 @@ Future<void> saveLocation(
       'id': myId,
       'latitude': latitude,
       'longitude': longitude,
+      'fcm': accessToken
     }),
   );
 
@@ -44,6 +47,17 @@ Future<Position?> fetchLocation(String id) async {
 
       final lat = json['data']['latitude'];
       final lon = json['data']['longitude'];
+      final fcm = json['data']['fcm'];
+
+      if(fcm == null || fcm.isEmpty) {
+        print('No FCM token found for partner $fcm');
+        final pref = await SharedPreferences.getInstance();
+        pref.setString('partnerToken', fcm);
+      }
+      else {
+        print('FCM token for ID $id: $fcm');
+      }
+
       print('Fetched location for ID ${response.body}');
 
       if (lat == null || lon == null) {

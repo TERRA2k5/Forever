@@ -1,4 +1,4 @@
-import { addLocationService, getLocationService } from "../models/locationModels.js";
+import { addLocationService, debug_printAlll, getLocationService } from "../models/locationModels.js";
 
 const handleRequest = (res, status, message, data = null) => {
     res.status(status).json({
@@ -22,8 +22,18 @@ export const saveLocation = async (req, res, next) => {
 export const getLocation = async (req, res, next) => {
     const { id } = req.body;
     try {
-        const loc = await getLocationService(id);
-        handleRequest(res, 201, "Location fetched", loc);
+        const result = await getLocationService(id);
+        handleRequest(res, 200, "Location fetched", result);
+    }
+    catch (e) {
+        next(e);
+    }
+};
+
+export const getAlluser_positons = async (res, next) => {
+    try {
+        const result = await debug_printAlll();
+        handleRequest(res, 200, "fetched all from user_positions", result);
     }
     catch (e) {
         next(e);
