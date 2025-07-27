@@ -1,4 +1,4 @@
-import { addLocationService, debug_printAlll, getLocationService } from "../models/locationModels.js";
+import { addLocationService, debug_printAlll, dropUserPositionsTableService, getLocationService } from "../models/locationModels.js";
 
 const handleRequest = (res, status, message, data = null) => {
     res.status(status).json({
@@ -30,10 +30,20 @@ export const getLocation = async (req, res, next) => {
     }
 };
 
-export const getAlluser_positons = async (res, next) => {
+export const getAlluser_positons = async (req, res, next) => {
     try {
         const result = await debug_printAlll();
         handleRequest(res, 200, "fetched all from user_positions", result);
+    }
+    catch (e) {
+        next(e);
+    }
+};
+
+export const deleteUserPositionsTable = async (req, res, next) => {
+    try {
+        await dropUserPositionsTableService();
+        handleRequest(res, 200, "Table 'user_positions' deleted successfully.");
     }
     catch (e) {
         next(e);

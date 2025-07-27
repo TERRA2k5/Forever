@@ -26,3 +26,15 @@ export const debug_printAlll = async () => {
 
     return result;
 };
+
+export const dropUserPositionsTableService = async () => {
+  const query = `
+    DROP TABLE IF EXISTS user_positions;
+  `;
+  try {
+    await pool.query(query);
+    console.log("✅ 'user_positions' table deleted successfully.");
+  } catch (err) {
+    console.error("❌ Error dropping 'user_positions' table:", err);
+  }
+};
