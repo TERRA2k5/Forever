@@ -57,10 +57,13 @@ class FcmHandler {
     final Map<String, dynamic> message = {
       "message": {
         "token": token,
-        "data": {"action": "vibrate"},
-      },
+        "data": {
+          "action": "vibrate",
+          "title": "💞 Vibration Alert",
+          "body": "Your partner misses you!"
+        }
+      }
     };
-
 
 
     String accessToken = await FirebaseAccessToken().getAccessToken();
