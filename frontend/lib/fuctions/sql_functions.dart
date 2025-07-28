@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:forever/services/fcm_handler.dart';
 import 'package:forever/services/firebase_access_token.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
@@ -11,7 +12,7 @@ Future<void> saveLocation(
   double longitude,
 ) async {
   final url = Uri.parse('https://forever-c5as.onrender.com/location');
-  String accessToken = await FirebaseAccessToken().getAccessToken();
+  String token = await FcmHandler().getToken();
   final response = await http.post(
     url,
     headers: {'Content-Type': 'application/json'},
@@ -19,7 +20,7 @@ Future<void> saveLocation(
       'id': myId,
       'latitude': latitude,
       'longitude': longitude,
-      'fcm': accessToken
+      'fcm': token
     }),
   );
 

@@ -87,4 +87,9 @@ class FcmHandler {
       print('Sending notification failed: $e');
     }
   }
+
+  Future<String> getToken() async {
+    String? token = await _messaging.getToken();
+    return token!;
+  }
 }
