@@ -1,6 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:math';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:forever/fuctions/sql_functions.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -42,13 +46,11 @@ class FcmHandler {
 
   Future<void> sendNotification() async {
     final prefs = await SharedPreferences.getInstance();
-    final partnerId = prefs.getString('partner_id') ?? '';
+    final String? token = prefs.getString('partnerToken');
 
-    final String? token = await fetchFCM(partnerId);
     print("sending to FCM Token: $token");
     if (token == null) {
       print("No token found, cannot send notification.");
-
       return;
     }
 
@@ -58,6 +60,8 @@ class FcmHandler {
         "data": {"action": "vibrate"},
       },
     };
+
+
 
     String accessToken = await FirebaseAccessToken().getAccessToken();
 
@@ -90,6 +94,7 @@ class FcmHandler {
 
   Future<String> getToken() async {
     String? token = await _messaging.getToken();
+    print(token.toString());
     return token!;
   }
 }
