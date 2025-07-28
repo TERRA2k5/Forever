@@ -4,11 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forever/UI/MapPage.dart';
 import 'package:forever/UI/WelcomePage.dart';
 import 'package:forever/providers/start_up_provider.dart';
+import 'package:forever/services/fcm_handler.dart';
 import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await FcmHandler().initialize();
   runApp(const ProviderScope(child: MyApp()));
 }
 

@@ -32,31 +32,63 @@ Future<void> saveLocation(
   }
 }
 
-Future<Position?> fetchLocation(String id) async {
-  print('Fetching location for $id');
+Future<String?> fetchFCM(String id) async {
+  print('Fetching FCM token for $id');
   try {
-    final url = Uri.parse('https://forever-c5as.onrender.com/getLocation');
+    final url = Uri.parse('https://forever-c5as.onrender.com/userPositions');
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'id': id}),
     );
 
-    if (response.statusCode == 201) {
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      final fcm = json['data']['fcm'];
+
+      if (fcm == null || fcm.isEmpty) {
+        print('No FCM token found for partner $id');
+        return null;
+      } else {
+        print('FCM token for partner ID $id: $fcm');
+
+        return fcm;
+      }
+    } else {
+      print('Failed with status: ${response.statusCode}');
+      return null;
+    }
+  } catch (e) {
+    print('Error fetching partner FCM: $e');
+    return null;
+  }
+}
+
+Future<Position?> fetchLocation(String id) async {
+  print('Fetching location for $id');
+  try {
+    final url = Uri.parse('https://forever-c5as.onrender.com/userPositions');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'id': id}),
+    );
+
+    if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
 
       final lat = json['data']['latitude'];
       final lon = json['data']['longitude'];
-      final fcm = json['data']['fcm'];
+      // final fcm = json['data']['fcm'];
 
-      if(fcm == null || fcm.isEmpty) {
-        print('No FCM token found for partner $fcm');
-        final pref = await SharedPreferences.getInstance();
-        pref.setString('partnerToken', fcm);
-      }
-      else {
-        print('FCM token for ID $id: $fcm');
-      }
+      // if(fcm == null || fcm.isEmpty) {
+      //   print('No FCM token found for partner $id');
+      // }
+      // else {
+      //   print('FCM token for partner ID $id: $fcm');
+      //   final pref = await SharedPreferences.getInstance();
+      //   pref.setString('partnerToken', fcm);
+      // }
 
       print('Fetched location for ID ${response.body}');
 

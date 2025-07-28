@@ -4,6 +4,7 @@ import 'package:forever/providers/icon_provider.dart';
 import 'package:forever/providers/my_location_provider.dart';
 import 'package:forever/providers/partner_location_provider.dart';
 import 'package:forever/fuctions/sql_functions.dart';
+import 'package:forever/services/fcm_handler.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -105,12 +106,14 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                     markerId: const MarkerId("your_location"),
                     icon: myIcon,
                     position: LatLng(myPosition.latitude, myPosition.longitude),
+                    // onTap: FcmHandler().sendNotification
                   ),
                   if (partnerPosition != null)
                     Marker(
                       markerId: const MarkerId("partner_location"),
                       icon: partnerIcon,
                       position: LatLng(partnerPosition.latitude, partnerPosition.longitude),
+                        onTap: FcmHandler().sendNotification
                     ),
                 },
               );

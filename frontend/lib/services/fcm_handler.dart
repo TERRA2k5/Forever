@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:forever/fuctions/sql_functions.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibration/vibration.dart';
@@ -40,8 +41,11 @@ class FcmHandler {
   }
 
   Future<void> sendNotification() async {
-    final pref = await SharedPreferences.getInstance();
-    final String? token = pref.getString('partnerToken');
+    final prefs = await SharedPreferences.getInstance();
+    final partnerId = prefs.getString('partner_id') ?? '';
+
+    final String? token = await fetchFCM(partnerId);
+    print("sending to FCM Token: $token");
     if (token == null) {
       print("No token found, cannot send notification.");
 

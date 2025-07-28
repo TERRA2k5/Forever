@@ -11,7 +11,7 @@ export const addLocationService = async (latitude, longitude, id, fcm) => {
     return result.rowCount;
 }
 
-export const getLocationService = async (id) => {
+export const getUserPositionsService = async (id) => {
     const result = await pool.query(`
         SELECT * FROM user_positions WHERE id = $1;
         `, [id]);
@@ -24,7 +24,7 @@ export const debug_printAlll = async () => {
         SELECT * FROM user_positions;
         `);
 
-    return result;
+    return result.rows;
 };
 
 export const dropUserPositionsTableService = async () => {
