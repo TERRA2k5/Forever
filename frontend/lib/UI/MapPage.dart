@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:forever/UI/ChatPage.dart';
 import 'package:forever/providers/icon_provider.dart';
 import 'package:forever/providers/my_location_provider.dart';
 import 'package:forever/providers/partner_location_provider.dart';
@@ -78,7 +79,11 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             ),
             child: IconButton(
               icon: const Icon(Icons.chat, color: Colors.black),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (context) => ChatScreen(),
+                ));
+              },
             ),
           ),
         ],

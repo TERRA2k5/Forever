@@ -2,7 +2,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:forever/UI/MapPage.dart';
+import 'package:forever/MainContainer.dart';
+import 'package:forever/UI/SignUp.dart';
 import 'package:forever/UI/WelcomePage.dart';
 import 'package:forever/providers/start_up_provider.dart';
 import 'package:forever/services/background.dart';
@@ -15,7 +16,6 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   FcmHandler().initialize();
-  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   runApp(const ProviderScope(child: MyApp()));
 }
@@ -27,37 +27,27 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final startupRoute = ref.watch(startupRouteProvider);
 
-    return ProviderScope(
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        routes: {
-          '/welcome': (context) => WelcomeScreen(),
-          '/home': (context) => const MapScreen(),
-        },
-        home: startupRoute.when(
-          loading:
-              () => const Scaffold(
-                body: Center(child: CircularProgressIndicator()),
-              ),
-          error: (err, _) => Scaffold(body: Center(child: Text('Error: $err'))),
-          data: (route) => NavigatorPage(route: route),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      routes: {
+        '/welcome': (context) => const WelcomeScreen(),
+        '/home': (context) => const Maincontainer(),
+        '/signup': (context) => const SignUpScreen(),
+      },
+      home: startupRoute.when(
+        loading: () => const Scaffold(
+          body: Center(child: CircularProgressIndicator()),
         ),
+        error: (err, _) => Scaffold(body: Center(child: Text('Error: $err'))),
+        data: (route) {
+          if (route == '/home') {
+            return const Maincontainer();
+          }
+          return const WelcomeScreen();
+        },
       ),
     );
   }
 }
 
-class NavigatorPage extends StatelessWidget {
-  final String route;
-
-  const NavigatorPage({super.key, required this.route});
-
-  @override
-  Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Navigator.pushReplacementNamed(context, route);
-    });
-
-    return const Scaffold(body: Center(child: CircularProgressIndicator()));
-  }
-}
+// The NavigatorPage class is no longer needed and has been removed.

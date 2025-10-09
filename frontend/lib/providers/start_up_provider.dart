@@ -1,8 +1,19 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 final startupRouteProvider = FutureProvider<String>((ref) async {
-  final prefs = await SharedPreferences.getInstance();
-  final connected = prefs.getBool('connected') ?? false;
+
+  var connected = false;
+  FirebaseAuth.instance
+      .authStateChanges()
+      .listen((User? user) {
+    if (user == null) {
+      connected = false;
+      print('User is currently signed out!');
+    } else {
+      connected = true;
+      print('User is signed in!');
+    }
+  });
   return connected ? '/home' : '/welcome';
 });
