@@ -9,9 +9,9 @@ const handleRequest = (res, status, message, data = null) => {
 };
 
 export const saveLocation = async (req, res, next) => {
-    const { latitude, longitude, id, fcm } = req.body;
+    const { latitude, longitude, id, fcm, email, name } = req.body;
     try {
-        const newLocation = await addLocationService(latitude, longitude, id, fcm);
+        const newLocation = await addLocationService(latitude, longitude, id, fcm, email, name);
         handleRequest(res, 201, "Location Updated", newLocation);
     }
     catch (e) {
