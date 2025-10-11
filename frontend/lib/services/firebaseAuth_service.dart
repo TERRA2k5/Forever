@@ -41,6 +41,9 @@ class AuthService{
                 await user.updateDisplayName(name);
                 SharedPreferences prefs = await SharedPreferences.getInstance();
                 await prefs.setString("userUID", user.uid.toString());
+                await prefs.setString("userName", name);
+                await prefs.setString("userEmail", emailAddress);
+
                 Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (context) => Maincontainer()),
@@ -85,6 +88,10 @@ class AuthService{
 
     Future<void> logout(WidgetRef ref) async {
         await FirebaseAuth.instance.signOut();
+
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.clear();
+
         ref.invalidate(startupRouteProvider);
     }
 }

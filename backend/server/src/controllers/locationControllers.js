@@ -1,4 +1,4 @@
-import { addLocationService, debug_printAlll, dropUserPositionsTableService, getUserPositionsService } from "../models/locationModels.js";
+import { addLocationService, debug_printAlll, dropUserPositionsTableService, getUserPositionsService, deleteIDService } from "../models/locationModels.js";
 
 const handleRequest = (res, status, message, data = null) => {
     res.status(status).json({
@@ -46,6 +46,17 @@ export const deleteUserPositionsTable = async (req, res, next) => {
         handleRequest(res, 200, "Table 'user_positions' deleted successfully.");
     }
     catch (e) {
+        next(e);
+    }
+};
+
+export const deleteID = async (req, res, next) => {
+    const {id} = req.body;
+    try{
+        await deleteIDService(id);
+        handleRequest(res, 200, "User deleted successfully.");
+    }
+    catch(e){
         next(e);
     }
 };

@@ -38,3 +38,9 @@ export const dropUserPositionsTableService = async () => {
     console.error("❌ Error dropping 'user_positions' table:", err);
   }
 };
+
+export const deleteIDService = async (id) => {
+  const result = await pool.query(`
+    DELETE FROM user_positions WHERE id = $1;
+    `, [id])
+}

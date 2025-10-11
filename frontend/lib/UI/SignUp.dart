@@ -75,7 +75,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 TextField(
                   controller: _nameController,
                   decoration: const InputDecoration(
-                    labelText: "Full Name",
+                    labelText: "Name / Pet name",
                     prefixIcon: Icon(Icons.person_outline),
                     border: OutlineInputBorder(),
                   ),

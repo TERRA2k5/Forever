@@ -11,6 +11,11 @@ Future<void> saveLocation(
   double latitude,
   double longitude,
 ) async {
+
+  SharedPreferences pref = await SharedPreferences.getInstance();
+  final name = pref.getString('userName');
+  final email = pref.getString('userEmail');
+
   final url = Uri.parse('https://forever-c5as.onrender.com/location');
   String token = await FcmHandler().getToken();
   final response = await http.post(
@@ -20,7 +25,9 @@ Future<void> saveLocation(
       'id': myId,
       'latitude': latitude,
       'longitude': longitude,
-      'fcm': token
+      'fcm': token,
+      'name': name,
+      'email': email
     }),
   );
   print('Saving in progress for $myId: ($latitude, $longitude) with token $token');
