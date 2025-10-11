@@ -8,6 +8,6 @@ router.post("/location", saveLocation);
 router.post("/userPositions", getUserPositions);
 router.get("/userPositions", getAlluser_positons); //debug
 router.delete("/userPositions", deleteUserPositionsTable); //debug
-router.post("locationDelete", deleteID); // debug
+router.post("/locationDelete", deleteID); // debug
 
 export default router;
