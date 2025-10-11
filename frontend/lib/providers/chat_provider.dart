@@ -8,7 +8,7 @@ final chatIdProvider = FutureProvider<String>((ref) async {
   final myId = await ref.watch(myIdProvider.future);
   final partnerId = await ref.watch(partnerIdProvider.future);
 
-  if (myId.compareTo(partnerId) > 0) {
+  if (myId!.compareTo(partnerId!) > 0) {
     return '$myId-$partnerId';
   } else {
     return '$partnerId-$myId';
@@ -27,6 +27,7 @@ final messagesStreamProvider = StreamProvider.autoDispose<List<Message>>((ref) {
 
   final chatId = asyncChatId.value;
   if (chatId == null) {
+    print("Chat ID is null, returning empty stream");
     return Stream.value([]);
   }
 

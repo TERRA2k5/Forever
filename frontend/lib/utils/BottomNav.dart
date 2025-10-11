@@ -9,10 +9,13 @@ class BottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return CurvedNavigationBar(
       index: currentIndex,
       backgroundColor: Colors.transparent,
-      color: Colors.black87,
+      color: colorScheme.primary,
       animationCurve: Curves.fastOutSlowIn,
       items: const [
         Icon(Icons.home, size: 30, color: Colors.white),

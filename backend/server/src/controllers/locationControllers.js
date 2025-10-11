@@ -12,7 +12,7 @@ export const saveLocation = async (req, res, next) => {
     const { latitude, longitude, id, fcm, email, name } = req.body;
     try {
         const newLocation = await addLocationService(latitude, longitude, id, fcm, email, name);
-        handleRequest(res, 201, "Location Updated", newLocation);
+        handleRequest(res, 200, "Location Updated", newLocation);
     }
     catch (e) {
         next(e);

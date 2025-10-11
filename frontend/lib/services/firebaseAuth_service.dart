@@ -6,6 +6,8 @@ import 'package:forever/MainContainer.dart';
 import 'package:forever/providers/main_container_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../providers/start_up_provider.dart';
+
 class AuthService{
 
     void createUser(BuildContext context , String emailAddress,String password,String confPassword, String name, WidgetRef ref) async{
@@ -79,5 +81,10 @@ class AuthService{
                 );
             }
         });
+    }
+
+    Future<void> logout(WidgetRef ref) async {
+        await FirebaseAuth.instance.signOut();
+        ref.invalidate(startupRouteProvider);
     }
 }

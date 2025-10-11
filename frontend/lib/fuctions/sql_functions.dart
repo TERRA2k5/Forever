@@ -23,8 +23,9 @@ Future<void> saveLocation(
       'fcm': token
     }),
   );
+  print('Saving in progress for $myId: ($latitude, $longitude) with token $token');
 
-  if (response.statusCode == 201) {
+  if (response.statusCode == 201 || response.statusCode == 200) {
     final json = jsonDecode(response.body);
     print('Success: $json');
   } else {

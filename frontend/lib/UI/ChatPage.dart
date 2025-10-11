@@ -49,7 +49,7 @@ class ChatScreen extends ConsumerWidget {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) => Center(child: Text("Error: $err")),
+              error: (err, stack) => Center(child: Text("No partner found. Please connect first.")),
             ),
           ),
           Container(

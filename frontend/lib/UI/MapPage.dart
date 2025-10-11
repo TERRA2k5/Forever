@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forever/UI/ChatPage.dart';
 import 'package:forever/providers/icon_provider.dart';
+import 'package:forever/providers/id_provider.dart';
 import 'package:forever/providers/my_location_provider.dart';
 import 'package:forever/providers/partner_location_provider.dart';
 import 'package:forever/fuctions/sql_functions.dart';
@@ -26,9 +27,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   }
 
   Future<void> _saveMyLocationToBackend() async {
-    final prefs = await SharedPreferences.getInstance();
-    final myId = prefs.getString('my_id');
     final position = await ref.read(myLocationProvider.future);
+    final myId = await ref.read(myIdProvider.future);
     if (myId != null) {
       await saveLocation(myId, position.latitude, position.longitude);
     }

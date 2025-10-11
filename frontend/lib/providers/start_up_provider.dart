@@ -1,19 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final startupRouteProvider = FutureProvider<String>((ref) async {
-
-  var connected = false;
-  FirebaseAuth.instance
-      .authStateChanges()
-      .listen((User? user) {
-    if (user == null) {
-      connected = false;
-      print('User is currently signed out!');
+final startupRouteProvider = StreamProvider<String>((ref) {
+  // You give the StreamProvider the radio station to listen to.
+  return FirebaseAuth.instance.authStateChanges().map((User? user) {
+    // It automatically listens and runs this logic EVERY TIME a new event is broadcast.
+    if (user != null) {
+      return '/home'; // User just logged in!
     } else {
-      connected = true;
-      print('User is signed in!');
+      return '/welcome'; // User just logged out!
     }
   });
-  return connected ? '/home' : '/welcome';
 });
