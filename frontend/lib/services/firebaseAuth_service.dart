@@ -3,7 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:forever/MainContainer.dart';
+import 'package:forever/UI/WelcomePage.dart';
+import 'package:forever/providers/id_provider.dart';
 import 'package:forever/providers/main_container_provider.dart';
+import 'package:forever/providers/my_location_provider.dart';
+import 'package:forever/providers/partner_location_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../providers/start_up_provider.dart';
@@ -40,7 +44,7 @@ class AuthService{
                 ref.read(main_container_provider.notifier).state = 1;
                 await user.updateDisplayName(name);
                 SharedPreferences prefs = await SharedPreferences.getInstance();
-                await prefs.setString("userUID", user.uid.toString());
+                // await prefs.setString("userUID", user.uid.toString());
                 await prefs.setString("userName", name);
                 await prefs.setString("userEmail", emailAddress);
 
@@ -76,8 +80,8 @@ class AuthService{
             .listen((User? user) async {
             if (user != null) {
                 ref.read(main_container_provider.notifier).state = 0;
-                SharedPreferences prefs = await SharedPreferences.getInstance();
-                await prefs.setString("userUID", user.uid.toString());
+                // SharedPreferences prefs = await SharedPreferences.getInstance();
+                // await prefs.setString("userUID", user.uid.toString());
                 Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(builder: (context) => Maincontainer()), (route) => false
@@ -86,12 +90,14 @@ class AuthService{
         });
     }
 
-    Future<void> logout(WidgetRef ref) async {
-        await FirebaseAuth.instance.signOut();
-
+    Future<void> logout(WidgetRef ref, BuildContext context) async {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.clear();
 
-        ref.invalidate(startupRouteProvider);
+        await FirebaseAuth.instance.signOut();
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => WelcomeScreen()), (route) => false
+        );
     }
 }

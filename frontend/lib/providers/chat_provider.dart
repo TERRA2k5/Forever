@@ -4,7 +4,7 @@ import '../models/message_model.dart';
 import 'id_provider.dart';
 
 
-final chatIdProvider = FutureProvider<String>((ref) async {
+final chatIdProvider = FutureProvider.autoDispose<String>((ref) async {
   final myId = await ref.watch(myIdProvider.future);
   final partnerId = await ref.watch(partnerIdProvider.future);
 
@@ -16,7 +16,7 @@ final chatIdProvider = FutureProvider<String>((ref) async {
 });
 
 
-final chatRepositoryProvider = Provider<ChatRepository>((ref) {
+final chatRepositoryProvider = Provider.autoDispose<ChatRepository>((ref) {
   return ChatRepository(firestore: FirebaseFirestore.instance);
 });
 

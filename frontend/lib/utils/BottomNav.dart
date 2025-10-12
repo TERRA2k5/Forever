@@ -15,7 +15,7 @@ class BottomNavBar extends StatelessWidget {
     return CurvedNavigationBar(
       index: currentIndex,
       backgroundColor: Colors.transparent,
-      color: colorScheme.primary,
+      color: colorScheme.secondary,
       animationCurve: Curves.fastOutSlowIn,
       items: const [
         Icon(Icons.home, size: 30, color: Colors.white),

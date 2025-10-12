@@ -49,5 +49,3 @@ class MyApp extends ConsumerWidget {
     );
   }
 }
-
-// The NavigatorPage class is no longer needed and has been removed.

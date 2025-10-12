@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:forever/services/firebaseAuth_service.dart';
 import 'package:forever/utils/CostomButton.dart';
 import 'package:forever/utils/IdCard.dart';
 import 'package:forever/utils/alertboxes.dart';
@@ -31,7 +32,7 @@ class ProfilePage extends ConsumerWidget {
                   child: Column(
                     // crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 100),
+                      const SizedBox(height: 80),
                       // --- App Title ---
                       RichText(
                         textAlign: TextAlign.center,
@@ -125,11 +126,12 @@ class ProfilePage extends ConsumerWidget {
                       SizedBox(height: 30),
                       CustomBtn(
                         onPressed: () {
-                          FirebaseAuth.instance.signOut();
+                          AuthService().logout(ref, context);
                         },
                         text: 'Logout',
                         icon: Icon(Icons.logout),
                       ),
+                      SizedBox(height: 100),
                     ],
                   ),
                 );

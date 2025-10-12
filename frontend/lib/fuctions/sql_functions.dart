@@ -89,13 +89,19 @@ Future<Position?> fetchLocation(String id) async {
       final lat = json['data']['latitude'];
       final lon = json['data']['longitude'];
       final fcm = json['data']['fcm'];
+      final name = json['data']['name'];
+      final email = json['data']['email'];
+
+      final pref = await SharedPreferences.getInstance();
+
+      await pref.setString("userName", name);
+      await pref.setString("userEmail", email);
 
       if(fcm == null || fcm.isEmpty) {
         print('No FCM token found for partner $id');
       }
       else {
         print('FCM token for partner ID $id: $fcm');
-        final pref = await SharedPreferences.getInstance();
         pref.setString('partnerToken', fcm);
       }
 

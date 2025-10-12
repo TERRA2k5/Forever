@@ -47,6 +47,8 @@ class FcmHandler {
   Future<void> sendNotification() async {
     final prefs = await SharedPreferences.getInstance();
     final String? token = prefs.getString('partnerToken');
+    final String? name = prefs.getString('userName') ?? ' ';
+    final String? partner = prefs.getString('partner_name') ?? 'Your Partner';
 
     print("sending to FCM Token: $token");
     if (token == null) {
@@ -59,8 +61,8 @@ class FcmHandler {
         "token": token,
         "data": {
           "action": "vibrate",
-          "title": "💞 Vibration Alert",
-          "body": "Your partner misses you!"
+          "title": "Miss You $partner ❤️",
+          "body": "$name misses you!"
         }
       }
     };
