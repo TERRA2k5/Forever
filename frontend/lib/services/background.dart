@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -25,6 +26,16 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     android: AndroidInitializationSettings('@mipmap/ic_launcher'),
   ));
 
+  SharedPreferences pref = await SharedPreferences.getInstance();
+  final partner = pref.getString('partner_name') ?? 'Your Partner';
+
+  if(message.data['action'] == 'message'){
+    message.data['title'] = 'Message from $partner';
+  }
+
+  if(message.data['action'] == 'vibrate') {
+    message.data['body'] = '$partner is thinking of you!';
+  }
   await plugin.show(
     0,
     message.data['title'] ?? '💖 Miss You',

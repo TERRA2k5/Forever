@@ -118,7 +118,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                       markerId: const MarkerId("partner_location"),
                       icon: partnerIcon,
                       position: LatLng(partnerPosition.latitude, partnerPosition.longitude),
-                        onTap: FcmHandler().sendNotification
+                        onTap: FcmHandler().sendMissNotification
                     ),
                 },
               );

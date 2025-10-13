@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:forever/services/fcm_handler.dart';
 import '../models/message_model.dart';
 import 'id_provider.dart';
 
@@ -60,10 +61,17 @@ class ChatRepository {
       'timestamp': FieldValue.serverTimestamp(),
     };
 
-    await _firestore
-        .collection('chats')
-        .doc(chatId)
-        .collection('messages')
-        .add(messageData);
+    try{
+      await _firestore
+          .collection('chats')
+          .doc(chatId)
+          .collection('messages')
+          .add(messageData);
+
+      await FcmHandler().sendNotification(messageData['text'].toString());
+    }
+    catch(e){
+      print("Error sending message: $e");
+    }
   }
 }

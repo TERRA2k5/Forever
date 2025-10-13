@@ -25,6 +25,16 @@ Future<void> _handleVibration(Map<String, dynamic> data) async {
       Vibration.vibrate(duration: 1000, amplitude: 128);
     }
   }
+
+  // if(data['action'] == 'message'){
+  //   print("Message action received!");
+  //
+  //   bool? hasVibrator = await Vibration.hasVibrator();
+  //
+  //   if (hasVibrator == true) {
+  //     Vibration.vibrate(duration: 500, amplitude: 64);
+  //   }
+  // }
 }
 
 class FcmHandler {
@@ -44,7 +54,7 @@ class FcmHandler {
     });
   }
 
-  Future<void> sendNotification() async {
+  Future<void> sendMissNotification() async {
     final prefs = await SharedPreferences.getInstance();
     final String? token = prefs.getString('partnerToken');
     final String? name = prefs.getString('userName') ?? ' ';
@@ -63,6 +73,59 @@ class FcmHandler {
           "action": "vibrate",
           "title": "Miss You $partner ❤️",
           "body": "$name misses you!"
+        }
+      }
+    };
+
+
+    String accessToken = await FirebaseAccessToken().getAccessToken();
+
+    final Uri url = Uri.parse(
+      'https://fcm.googleapis.com/v1/projects/forever-8938b/messages:send',
+    );
+
+    final Map<String, String> headers = {
+      'Content-Type': 'application/json',
+
+      'Authorization': 'Bearer $accessToken',
+    };
+
+    try {
+      final response = await http.post(
+        url,
+        headers: headers,
+        body: jsonEncode(message),
+      );
+
+      if (response.statusCode == 200) {
+        print("Notification sent successfully!");
+      } else {
+        print("Failed to send notification: ${response.body}");
+      }
+    } catch (e) {
+      print('Sending notification failed: $e');
+    }
+  }
+
+  Future<void> sendNotification(String body) async {
+    print('dasfs');
+    final prefs = await SharedPreferences.getInstance();
+    final String? token = prefs.getString('partnerToken');
+    final String? name = prefs.getString('userName') ?? 'Your Partner';
+
+    print("sending to FCM Token: $token");
+    if (token == null) {
+      print("No token found, cannot send notification.");
+      return;
+    }
+
+    final Map<String, dynamic> message = {
+      "message": {
+        "token": token,
+        "data": {
+          "action": "message",
+          "title": "Message from $name",
+          "body": "$body"
         }
       }
     };
