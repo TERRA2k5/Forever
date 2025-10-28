@@ -22,19 +22,10 @@ Future<void> _handleVibration(Map<String, dynamic> data) async {
     bool? hasVibrator = await Vibration.hasVibrator();
 
     if (hasVibrator == true) {
-      Vibration.vibrate(duration: 1000, amplitude: 128);
+      print('foreground notification is handled');
+      Vibration.vibrate(pattern: [0, 1000, 500, 1000]);
     }
   }
-
-  // if(data['action'] == 'message'){
-  //   print("Message action received!");
-  //
-  //   bool? hasVibrator = await Vibration.hasVibrator();
-  //
-  //   if (hasVibrator == true) {
-  //     Vibration.vibrate(duration: 500, amplitude: 64);
-  //   }
-  // }
 }
 
 class FcmHandler {
@@ -69,10 +60,17 @@ class FcmHandler {
     final Map<String, dynamic> message = {
       "message": {
         "token": token,
+        // This `notification` block is what the OS will display
+        // when your app is terminated. It ensures delivery.
+        "notification": {
+          "title": "Misses You $partner!",
+          "body": '$name is thinking of you!',
+        },
+
         "data": {
           "action": "vibrate",
-          "title": "Miss You $partner ❤️",
-          "body": "$name misses you!"
+          "senderName": name,
+          "screen_to_open": "/home",
         }
       }
     };
@@ -108,42 +106,43 @@ class FcmHandler {
   }
 
   Future<void> sendNotification(String body) async {
-    print('dasfs');
+    print('Preparing to send notification...');
     final prefs = await SharedPreferences.getInstance();
     final String? token = prefs.getString('partnerToken');
     final String? name = prefs.getString('userName') ?? 'Your Partner';
 
-    print("sending to FCM Token: $token");
     if (token == null) {
-      print("No token found, cannot send notification.");
+      print("No partner token found, cannot send notification.");
       return;
     }
 
     final Map<String, dynamic> message = {
       "message": {
         "token": token,
+        "notification": {
+          "title": "Message from $name",
+          "body": body,
+        },
         "data": {
           "action": "message",
-          "title": "Message from $name",
-          "body": "$body"
+          "senderName": name,
+          "screen_to_open": "/chat",
         }
       }
     };
 
-
-    String accessToken = await FirebaseAccessToken().getAccessToken();
-
-    final Uri url = Uri.parse(
-      'https://fcm.googleapis.com/v1/projects/forever-8938b/messages:send',
-    );
-
-    final Map<String, String> headers = {
-      'Content-Type': 'application/json',
-
-      'Authorization': 'Bearer $accessToken',
-    };
-
     try {
+      String accessToken = await FirebaseAccessToken().getAccessToken();
+
+      final Uri url = Uri.parse(
+        'https://fcm.googleapis.com/v1/projects/forever-8938b/messages:send',
+      );
+
+      final Map<String, String> headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      };
+
       final response = await http.post(
         url,
         headers: headers,
@@ -151,12 +150,12 @@ class FcmHandler {
       );
 
       if (response.statusCode == 200) {
-        print("Notification sent successfully!");
+        print("Notification sent successfully via FCM!");
       } else {
-        print("Failed to send notification: ${response.body}");
+        print("Failed to send notification. Status: ${response.statusCode}, Body: ${response.body}");
       }
     } catch (e) {
-      print('Sending notification failed: $e');
+      print('An error occurred while sending the notification: $e');
     }
   }
 
