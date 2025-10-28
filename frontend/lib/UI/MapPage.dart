@@ -119,7 +119,16 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                       markerId: const MarkerId("partner_location"),
                       icon: partnerIcon,
                       position: LatLng(partnerPosition.latitude, partnerPosition.longitude),
-                        onTap: FcmHandler().sendVibrationNotification
+                        onTap: (){ FcmHandler().sendVibrationNotification();
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Vibe sent successfully!"),
+                            behavior: SnackBarBehavior.floating,
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      }
                     ),
                 },
               );
