@@ -14,7 +14,6 @@ Future<void> saveLocation(
 ) async {
 
   SharedPreferences pref = await SharedPreferences.getInstance();
-  final name = pref.getString('userName');
   final email = pref.getString('userEmail');
 
   final url = Uri.parse('https://forever-c5as.onrender.com/location');
@@ -27,7 +26,6 @@ Future<void> saveLocation(
       'latitude': latitude,
       'longitude': longitude,
       'fcm': token,
-      'name': name,
       'email': email
     }),
   );
