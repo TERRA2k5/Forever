@@ -49,6 +49,7 @@ dependencies:
   firebase_auth: ^5.3.4
   curved_navigation_bar: ^1.0.6
   fluttertoast: ^8.2.1
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
@@ -77,6 +78,7 @@ flutter:
   assets:
   - assets/placement.png
   - assets/heart.png
+  - assets/icon.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -103,3 +105,11 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+flutter_launcher_icons:
+  android: "launcher_icon" # Can be true to use default "ic_launcher" or a custom name
+  ios: true                # Set to true to generate iOS icons
+  image_path: "assets/icon.png" # Path to your source icon image
+  min_sdk_android: 21 # Optional: Override minimum SDK if needed
+  # Optional: For adaptive icons on Android (Android 8.0+)
+  adaptive_icon_background: "#8c52ff" # Color for the background layer
+  adaptive_icon_foreground: "assets/icon.png" # Path to foreground layer image
