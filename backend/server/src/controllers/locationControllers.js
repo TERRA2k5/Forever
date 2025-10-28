@@ -1,4 +1,4 @@
-import { addLocationService, debug_printAlll, dropUserPositionsTableService, getUserPositionsService, deleteIDService } from "../models/locationModels.js";
+import { addLocationService, debug_printAlll, dropUserPositionsTableService, getUserPositionsService, deleteIDService, updateNameService } from "../models/locationModels.js";
 
 const handleRequest = (res, status, message, data = null) => {
     res.status(status).json({
@@ -60,3 +60,15 @@ export const deleteID = async (req, res, next) => {
         next(e);
     }
 };
+
+export const updateName = async (req, res, next) => {
+    const { id, name } = req.body;
+    try {
+        const newName = await updateNameService(id,name);
+        handleRequest(res, 200, "Name Updated", newName);
+    }
+    catch (e) {
+        next(e);
+    }
+};
+

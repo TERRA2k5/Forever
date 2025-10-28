@@ -44,3 +44,14 @@ export const deleteIDService = async (id) => {
     DELETE FROM user_positions WHERE id = $1;
     `, [id])
 }
+
+export const updateNameService = async (id, name) => {
+  const result = await pool.query(
+    `INSERT INTO user_positions (id, name)
+   VALUES ($1, $2)
+   ON CONFLICT (id)
+   DO UPDATE SET name = EXCLUDED.name`,
+    [id, name]
+  );
+  return result.rowCount;
+}

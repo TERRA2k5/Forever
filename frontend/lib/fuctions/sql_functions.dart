@@ -133,3 +133,34 @@ Future<Position?> fetchLocation(String id) async {
   }
 }
 
+Future<String?> fetchName(String id) async {
+  print('Fetching location for $id');
+  try {
+    final url = Uri.parse('https://forever-c5as.onrender.com/updateName');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'id': id}),
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+
+      final name = json['data']['name'];
+
+      final pref = await SharedPreferences.getInstance();
+      await pref.setString("userName", name);
+
+      if(name == null) return null;
+
+      print('Fetched name for ID ${response.body}');
+      return name;
+    } else {
+      print('Failed with status: ${response.statusCode}');
+      return null;
+    }
+  } catch (e) {
+    print('Error fetching partner name: $e');
+    return null;
+  }
+}

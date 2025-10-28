@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../fuctions/sql_functions.dart';
 import '../providers/id_provider.dart';
+import '../providers/my_location_provider.dart';
 import '../providers/partner_location_provider.dart';
 import '../providers/pet_name_provider.dart';
 import 'CostomButton.dart';
@@ -72,6 +74,14 @@ Future<void> showPartnerIDbox(BuildContext context, WidgetRef ref) async {
 Future<void> showPetNameBox(BuildContext context, WidgetRef ref) async {
   final nameController = TextEditingController();
 
+  Future<void> _updateBackend() async {
+    final position = await ref.read(myLocationProvider.future);
+    final myId = await ref.read(myIdProvider.future);
+    if (myId != null) {
+      await saveLocation(myId, position.latitude, position.longitude);
+    }
+  }
+
   await showDialog(
     context: context,
     builder: (BuildContext dialogContext) {
@@ -102,7 +112,7 @@ Future<void> showPetNameBox(BuildContext context, WidgetRef ref) async {
               if (partnerName.isNotEmpty) {
                 final prefs = await SharedPreferences.getInstance();
                 await prefs.setString('partner_name', partnerName);
-
+                await _updateBackend();
                 if (dialogContext.mounted) {
                   Navigator.of(dialogContext).pop();
                 }
@@ -126,6 +136,16 @@ Future<void> showPetNameBox(BuildContext context, WidgetRef ref) async {
 
 
 Future<void> showUserNameBox(BuildContext context, WidgetRef ref) async {
+
+  Future<void> _updateBackend() async {
+    final position = await ref.read(myLocationProvider.future);
+    final myId = await ref.read(myIdProvider.future);
+    if (myId != null) {
+      await saveLocation(myId, position.latitude, position.longitude);
+    }
+  }
+
+
   final nameController = TextEditingController();
 
   await showDialog(
@@ -158,7 +178,7 @@ Future<void> showUserNameBox(BuildContext context, WidgetRef ref) async {
               if (name.isNotEmpty) {
                 final prefs = await SharedPreferences.getInstance();
                 await prefs.setString('userName', name);
-
+                await _updateBackend();
                 if (dialogContext.mounted) {
                   Navigator.of(dialogContext).pop();
                 }

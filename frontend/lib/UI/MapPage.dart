@@ -24,10 +24,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   @override
   void initState() {
     super.initState();
-    _saveMyLocationToBackend();
+    _updateBackend();
   }
 
-  Future<void> _saveMyLocationToBackend() async {
+  Future<void> _updateBackend() async {
     final position = await ref.read(myLocationProvider.future);
     final myId = await ref.read(myIdProvider.future);
     if (myId != null) {
@@ -97,7 +97,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (err, _) => Center(child: Text("Error partnerPosition: $err")),
             data: (partnerPosition) {
-              ref.invalidate(userNameProvider);
               print("Partner Position: $partnerPosition");
               return GoogleMap(
                 zoomControlsEnabled: false,
