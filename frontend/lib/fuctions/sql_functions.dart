@@ -42,6 +42,37 @@ Future<void> saveLocation(
   }
 }
 
+
+Future<void> updateName(
+    String Id,
+    String name
+    ) async {
+
+  SharedPreferences pref = await SharedPreferences.getInstance();
+  await pref.setString("userName", name);
+
+  final url = Uri.parse('https://forever-c5as.onrender.com/updateName');
+  String token = await FcmHandler().getToken();
+  final response = await http.post(
+    url,
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({
+      'id': Id,
+      'fcm': token,
+      'name': name,
+    }),
+  );
+  print('Updating name in progress for $Id: ($name) with token $token');
+
+  if (response.statusCode == 201 || response.statusCode == 200) {
+    final json = jsonDecode(response.body);
+    print('Success: $json');
+  } else {
+    print('Failed with status: ${response.statusCode}');
+    print('Body: ${response.body}');
+  }
+}
+
 // Future<String?> fetchFCM(String id) async {
 //   print('Fetching FCM token for $id');
 //   try {
@@ -136,7 +167,7 @@ Future<Position?> fetchLocation(String id) async {
 Future<String?> fetchName(String id) async {
   print('Fetching location for $id');
   try {
-    final url = Uri.parse('https://forever-c5as.onrender.com/updateName');
+    final url = Uri.parse('https://forever-c5as.onrender.com/userPositions');
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
@@ -146,14 +177,15 @@ Future<String?> fetchName(String id) async {
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
 
+
       final name = json['data']['name'];
 
       final pref = await SharedPreferences.getInstance();
       await pref.setString("userName", name);
 
-      if(name == null) return null;
 
       print('Fetched name for ID ${response.body}');
+
       return name;
     } else {
       print('Failed with status: ${response.statusCode}');

@@ -74,11 +74,10 @@ Future<void> showPartnerIDbox(BuildContext context, WidgetRef ref) async {
 Future<void> showPetNameBox(BuildContext context, WidgetRef ref) async {
   final nameController = TextEditingController();
 
-  Future<void> _updateBackend() async {
-    final position = await ref.read(myLocationProvider.future);
-    final myId = await ref.read(myIdProvider.future);
-    if (myId != null) {
-      await saveLocation(myId, position.latitude, position.longitude);
+  Future<void> _updateBackend(String partnerName) async {
+    final partnerID = await ref.read(partnerIdProvider.future);
+    if (partnerID != null) {
+      await updateName(partnerID, partnerName);
     }
   }
 
@@ -112,7 +111,7 @@ Future<void> showPetNameBox(BuildContext context, WidgetRef ref) async {
               if (partnerName.isNotEmpty) {
                 final prefs = await SharedPreferences.getInstance();
                 await prefs.setString('partner_name', partnerName);
-                await _updateBackend();
+                await _updateBackend(partnerName);
                 if (dialogContext.mounted) {
                   Navigator.of(dialogContext).pop();
                 }
@@ -137,11 +136,10 @@ Future<void> showPetNameBox(BuildContext context, WidgetRef ref) async {
 
 Future<void> showUserNameBox(BuildContext context, WidgetRef ref) async {
 
-  Future<void> _updateBackend() async {
-    final position = await ref.read(myLocationProvider.future);
+  Future<void> _updateBackend(String name) async {
     final myId = await ref.read(myIdProvider.future);
     if (myId != null) {
-      await saveLocation(myId, position.latitude, position.longitude);
+      await updateName(myId, name);
     }
   }
 
@@ -178,7 +176,7 @@ Future<void> showUserNameBox(BuildContext context, WidgetRef ref) async {
               if (name.isNotEmpty) {
                 final prefs = await SharedPreferences.getInstance();
                 await prefs.setString('userName', name);
-                await _updateBackend();
+                await _updateBackend(name);
                 if (dialogContext.mounted) {
                   Navigator.of(dialogContext).pop();
                 }

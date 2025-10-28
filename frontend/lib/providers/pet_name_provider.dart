@@ -7,7 +7,7 @@ final petNameProvider = FutureProvider.autoDispose<String?>((ref) async {
   final prefs = await SharedPreferences.getInstance();
   final partnerId = prefs.getString('partner_id');
   if (partnerId == null) return null;
-  // print("Partner called with ID: $partnerId");
+
   String? name = await fetchName(partnerId);
   final pref = await SharedPreferences.getInstance();
   await pref.setString("partner_name", name ?? "Partner Name");
