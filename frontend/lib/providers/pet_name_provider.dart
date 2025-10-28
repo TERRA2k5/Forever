@@ -9,9 +9,10 @@ final petNameProvider = FutureProvider.autoDispose<String?>((ref) async {
   if (partnerId == null) return null;
 
   String? name = await fetchName(partnerId);
+  if(name == null) return null;
   final pref = await SharedPreferences.getInstance();
-  await pref.setString("partner_name", name ?? "Partner Name");
-  return await name;
+  await pref.setString("partner_name", name);
+  return name;
 });
 
 final userNameProvider = FutureProvider.autoDispose<String?>((ref) async {
@@ -19,7 +20,8 @@ final userNameProvider = FutureProvider.autoDispose<String?>((ref) async {
   if (Id == null) return null;
 
   String? name = await fetchName(Id);
+  if(name == null) return null;
   final pref = await SharedPreferences.getInstance();
-  await pref.setString("userName", name ?? "Enter Your Name");
-  return await name;
+  await pref.setString("userName", name);
+  return name;
 });

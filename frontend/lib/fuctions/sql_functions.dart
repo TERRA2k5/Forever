@@ -46,8 +46,6 @@ Future<void> updateName(
     String name
     ) async {
 
-  SharedPreferences pref = await SharedPreferences.getInstance();
-  await pref.setString("userName", name);
 
   final url = Uri.parse('https://forever-c5as.onrender.com/updateName');
   String token = await FcmHandler().getToken();
