@@ -48,6 +48,7 @@ Future<void> showPartnerIDbox(BuildContext context, WidgetRef ref) async {
                 // 3. IMPORTANT: Invalidate the provider to force a refresh
                 ref.invalidate(partnerIdProvider);
                 ref.invalidate(partnerLocationProvider);
+                ref.invalidate(petNameProvider);
 
                 if (dialogContext.mounted) {
                   Navigator.of(dialogContext).pop();
