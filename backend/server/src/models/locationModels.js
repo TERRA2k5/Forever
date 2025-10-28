@@ -5,7 +5,7 @@ export const addLocationService = async (latitude, longitude, id, fcm, email, na
     `INSERT INTO user_positions (latitude, longitude, id, fcm, email, name)
    VALUES ($1, $2, $3, $4, $5, $6)
    ON CONFLICT (id)
-   DO UPDATE SET latitude = EXCLUDED.latitude, longitude = EXCLUDED.longitude, fcm = EXCLUDED.fcm`,
+   DO UPDATE SET latitude = EXCLUDED.latitude, longitude = EXCLUDED.longitude, fcm = EXCLUDED.fcm, name = EXCLUDED.name`,
     [latitude, longitude, id, fcm, email, name]
   );
   return result.rowCount;

@@ -6,6 +6,7 @@ import 'package:forever/providers/id_provider.dart';
 import 'package:forever/providers/my_location_provider.dart';
 import 'package:forever/providers/partner_location_provider.dart';
 import 'package:forever/fuctions/sql_functions.dart';
+import 'package:forever/providers/pet_name_provider.dart';
 import 'package:forever/services/fcm_handler.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -96,6 +97,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (err, _) => Center(child: Text("Error partnerPosition: $err")),
             data: (partnerPosition) {
+              ref.invalidate(userNameProvider);
               print("Partner Position: $partnerPosition");
               return GoogleMap(
                 zoomControlsEnabled: false,
@@ -118,7 +120,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                       markerId: const MarkerId("partner_location"),
                       icon: partnerIcon,
                       position: LatLng(partnerPosition.latitude, partnerPosition.longitude),
-                        onTap: FcmHandler().sendMissNotification
+                        onTap: FcmHandler().sendVibrationNotification
                     ),
                 },
               );

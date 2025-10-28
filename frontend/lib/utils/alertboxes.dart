@@ -125,3 +125,59 @@ Future<void> showPetNameBox(BuildContext context, WidgetRef ref) async {
 }
 
 
+Future<void> showUserNameBox(BuildContext context, WidgetRef ref) async {
+  final nameController = TextEditingController();
+
+  await showDialog(
+    context: context,
+    builder: (BuildContext dialogContext) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Your Name'),
+        content: TextField(
+          controller: nameController,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: "Enter your name/petname",
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Cancel'),
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+            },
+          ),
+
+          CustomBtn(
+            text: 'Save ♡',
+            onPressed: () async {
+              final name = nameController.text.trim();
+
+              if (name.isNotEmpty) {
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setString('userName', name);
+
+                if (dialogContext.mounted) {
+                  Navigator.of(dialogContext).pop();
+                }
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Name updated successfully!"),
+                    behavior: SnackBarBehavior.floating,
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                ref.invalidate(userNameProvider);
+              }
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
+

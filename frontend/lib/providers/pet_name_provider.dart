@@ -6,3 +6,8 @@ final petNameProvider = FutureProvider.autoDispose<String?>((ref) async {
   final petName = prefs.getString('partner_name');
   return petName;
 });
+
+final userNameProvider = FutureProvider.autoDispose<String?>((ref) async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getString('userName');
+});

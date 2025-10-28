@@ -1,67 +1,33 @@
 import 'dart:typed_data';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-
-// Initialize the plugin once as a global variable for efficiency.
-final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
-FlutterLocalNotificationsPlugin();
+// Remove local notifications import, it's not needed here anymore
+// import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:vibration/vibration.dart'; // Import the vibration package
 
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // It's crucial to initialize Firebase first in the background isolate.
+  // Initialize Firebase (required in background isolate)
   await Firebase.initializeApp();
-  print("📥 Background message received! Handling with custom notification.");
-  print("Action: ${message.data['action']}");
+  print("📥 Background message received! Action: ${message.data['action']}");
 
-  // Initialize the plugin. This is safe to call multiple times.
-  await _flutterLocalNotificationsPlugin.initialize(const InitializationSettings(
-    android: AndroidInitializationSettings('@mipmap/ic_launcher'),
-  ));
+  // --- ✅ THE FIX: Only trigger vibration, DO NOT show a local notification ---
+  // The OS will already show the notification based on the FCM payload's
+  // 'notification' block. This handler's job is just to add the custom
+  // vibration if it's the 'vibrate' action.
 
-  AndroidNotificationDetails androidDetails;
-
-  if (message.data['action'] == 'message') {
-
-    print("Action is 'message'. Configuring notification with sound.");
-    androidDetails = const AndroidNotificationDetails(
-      'message_channel', // Use a different channel ID for messages
-      'Message Channel',
-      channelDescription: 'Used for incoming chat messages',
-      importance: Importance.max,
-      priority: Priority.high,
-      playSound: true, // <-- PLAY SOUND IS ENABLED
-    );
+  if (message.data['action'] == 'vibrate') {
+    print('Action is "vibrate". Triggering custom vibration pattern.');
+    bool? hasVibrator = await Vibration.hasVibrator();
+    if (hasVibrator == true) {
+      // Directly trigger the custom vibration pattern.
+      // The OS handles showing the notification itself.
+      Vibration.vibrate(pattern: [0, 1000, 500, 1000], amplitude: 128);
+    }
   } else {
-    // For any other action (like 'vibrate'), use your custom pattern.
-    print("Action is not 'message'. Configuring notification with custom vibration.");
-    androidDetails = AndroidNotificationDetails(
-      'vibrate_channel',
-      'Vibrate Channel',
-      channelDescription: 'Used for special partner vibration alerts',
-      importance: Importance.max,
-      priority: Priority.high,
-      vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
-      playSound: false, // <-- PLAY SOUND IS DISABLED
-    );
+    // If it's a 'message' or any other action, DO NOTHING in this handler.
+    // The OS will display the notification based on the FCM payload's
+    // 'notification' block and the 'message_channel' settings (sound+vibration).
+    print("Action is not 'vibrate'. Letting OS handle the standard notification display.");
   }
-
-  // Build the final notification details for the local notification.
-  NotificationDetails notificationDetails = NotificationDetails(
-    android: androidDetails,
-  );
-
-  // Get title and body from the reliable `notification` payload.
-  final String title = message.notification?.title ?? 'New Notification';
-  final String body = message.notification?.body ?? 'You have a new message.';
-
-  // Show the local notification with the correct, conditional details.
-  await _flutterLocalNotificationsPlugin.show(
-    // ⭐ BEST PRACTICE: Use a unique ID for each notification.
-    // This ensures new messages don't just replace the old ones.
-    DateTime.now().millisecondsSinceEpoch.toSigned(31),
-    title,
-    body,
-    notificationDetails,
-  );
 }
