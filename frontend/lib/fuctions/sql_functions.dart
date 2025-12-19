@@ -117,13 +117,9 @@ Future<Position?> fetchLocation(String id) async {
       final lat = json['data']['latitude'];
       final lon = json['data']['longitude'];
       final fcm = json['data']['fcm'];
-      final name = json['data']['name'];
-      final email = json['data']['email'];
 
       final pref = await SharedPreferences.getInstance();
 
-      await pref.setString("userName", name);
-      await pref.setString("userEmail", email);
 
       if(fcm == null || fcm.isEmpty) {
         print('No FCM token found for partner $id');
@@ -172,14 +168,7 @@ Future<String?> fetchName(String id) async {
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
-
-
       final name = json['data']['name'];
-
-      final pref = await SharedPreferences.getInstance();
-      await pref.setString("userName", name);
-
-
       print('Fetched name for ID ${response.body}');
 
       return name;

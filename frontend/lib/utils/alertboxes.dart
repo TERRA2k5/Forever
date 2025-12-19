@@ -39,10 +39,13 @@ Future<void> showPartnerIDbox(BuildContext context, WidgetRef ref) async {
           CustomBtn(
             text: 'Save ♡ Connect',
             onPressed: () async {
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              await prefs.clear();
+
               final partnerId = partnerIdController.text.trim();
 
               if (partnerId.isNotEmpty) {
-                final prefs = await SharedPreferences.getInstance();
+                // final prefs = await SharedPreferences.getInstance();
                 await prefs.setString('partner_id', partnerId);
 
                 // 3. IMPORTANT: Invalidate the provider to force a refresh

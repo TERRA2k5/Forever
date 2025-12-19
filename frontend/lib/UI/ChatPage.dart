@@ -3,15 +3,42 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forever/providers/pet_name_provider.dart';
 import '../models/message_model.dart';
 import '../providers/chat_provider.dart';
+import '../providers/chat_state_provider.dart';
 import '../providers/id_provider.dart';
 
-class ChatScreen extends ConsumerWidget {
-  final TextEditingController _messageController = TextEditingController();
-
-  ChatScreen({super.key});
+// 1. Convert to ConsumerStatefulWidget to access lifecycle methods
+class ChatScreen extends ConsumerStatefulWidget {
+  const ChatScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ChatScreen> createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends ConsumerState<ChatScreen> {
+  final TextEditingController _messageController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      print('chat state open is true');
+      ref.read(isChatScreenOpenProvider.notifier).state = true;
+      // ref.invalidate(isChatScreenOpenProvider);
+    });
+  }
+
+  @override
+  void dispose() {
+    // ref.read(isChatScreenOpenProvider.notifier).state = false;
+    _messageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ref.watch(isChatScreenOpenProvider);
+    // The rest of your build logic remains exactly the same!
     final messagesAsyncValue = ref.watch(messagesStreamProvider);
     final myIdAsyncValue = ref.watch(myIdProvider);
     final chatIdAsyncValue = ref.watch(chatIdProvider);
@@ -20,10 +47,11 @@ class ChatScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title:partnerNameAsync.when(
+        title: partnerNameAsync.when(
           data: (partnerName) => Text(partnerName ?? 'Chat'),
           error: (err, stack) => Text('Chat Error $err'),
-          loading: () => CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary)),
+          loading: () => CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary)),
         ),
         centerTitle: true,
         elevation: 1,
@@ -32,45 +60,51 @@ class ChatScreen extends ConsumerWidget {
         children: [
           Expanded(
             child: messagesAsyncValue.when(
-              data: (messages) {
-                if (messages.isEmpty) {
+                data: (messages) {
+                  if (messages.isEmpty) {
+                    return const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.chat_bubble_outline,
+                              size: 60, color: Colors.grey),
+                          SizedBox(height: 16),
+                          Text("Say something sweet!",
+                              style: TextStyle(fontSize: 16)),
+                        ],
+                      ),
+                    );
+                  }
+                  return ListView.builder(
+                    reverse: true,
+                    padding: const EdgeInsets.all(12.0),
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      final message = messages[index];
+                      final bool isMe =
+                          message.senderId == myIdAsyncValue.value;
+                      return _MessageBubble(message: message, isMe: isMe);
+                    },
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (err, stack) {
+                  print('Error loading messages: $err');
                   return const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.chat_bubble_outline, size: 60, color: Colors.grey),
-                        SizedBox(height: 16),
-                        Text("Say something sweet!", style: TextStyle(fontSize: 16)),
-                      ],
+                    child: Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Text(
+                        "Couldn't load messages. Please check your connection or try again later.",
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   );
-                }
-                return ListView.builder(
-                  reverse: true,
-                  padding: const EdgeInsets.all(12.0),
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final message = messages[index];
-                    final bool isMe = message.senderId == myIdAsyncValue.value;
-                    return _MessageBubble(message: message, isMe: isMe);
-                  },
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) => const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text(
-                    "Couldn't load messages. Please check your connection or try again later.",
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-            ),
+                }),
           ),
-          // --- Redesigned Message Input Area ---
+          // --- Message Input Area ---
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+            padding:
+            const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
             decoration: BoxDecoration(
               color: Theme.of(context).cardColor,
               boxShadow: [
@@ -109,7 +143,8 @@ class ChatScreen extends ConsumerWidget {
                       foregroundColor: colorScheme.onPrimary,
                     ),
                     icon: const Icon(Icons.send_rounded),
-                    onPressed: myIdAsyncValue.hasValue && chatIdAsyncValue.hasValue
+                    onPressed: myIdAsyncValue.hasValue &&
+                        chatIdAsyncValue.hasValue
                         ? () {
                       final text = _messageController.text;
                       if (text.trim().isNotEmpty) {
@@ -133,7 +168,6 @@ class ChatScreen extends ConsumerWidget {
   }
 }
 
-
 class _MessageBubble extends StatelessWidget {
   const _MessageBubble({
     required this.message,
@@ -153,7 +187,8 @@ class _MessageBubble extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+        constraints:
+        BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
         decoration: BoxDecoration(
           color: isMe ? colorScheme.primary : colorScheme.surfaceVariant,
           borderRadius: BorderRadius.only(

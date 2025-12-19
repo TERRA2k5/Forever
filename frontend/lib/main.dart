@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forever/MainContainer.dart';
 import 'package:forever/UI/SignUp.dart';
 import 'package:forever/UI/WelcomePage.dart';
+import 'package:forever/UI/ChatPage.dart';
 import 'package:forever/providers/start_up_provider.dart';
 import 'package:forever/services/background.dart';
 import 'package:forever/services/fcm_handler.dart';
@@ -33,6 +34,7 @@ class MyApp extends ConsumerWidget {
         '/welcome': (context) => const WelcomeScreen(),
         '/home': (context) => const Maincontainer(),
         '/signup': (context) => const SignUpScreen(),
+        '/chat': (context) => ChatScreen(),
       },
       home: startupRoute.when(
         loading: () => const Scaffold(

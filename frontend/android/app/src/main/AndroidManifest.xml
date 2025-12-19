@@ -10,7 +10,7 @@
 
 
     <application
-        android:label="forever"
+        android:label="Forever"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
 
