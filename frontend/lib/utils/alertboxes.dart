@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:forever/providers/chat_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../fuctions/sql_functions.dart';
@@ -202,4 +206,47 @@ Future<void> showUserNameBox(BuildContext context, WidgetRef ref) async {
   );
 }
 
+Future<void> showErrorBox(BuildContext context, WidgetRef ref) async {
+  await showDialog(
+    context: context,
+    builder: (BuildContext dialogContext) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Something went wrong!'),
+        content: Text(
+          'Check your network connection', style: TextStyle(
+            color: Colors.black,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Cancel'),
+            onPressed: () {
+              SystemNavigator.pop();
+            },
+          ),
 
+          CustomBtn(
+            text: 'Retry',
+            onPressed: () async {
+              ref.refresh(chatIdProvider);
+              ref.refresh(chatRepositoryProvider);
+              ref.refresh(myIdProvider);
+              ref.refresh(partnerIdProvider);
+              ref.refresh(myLocationProvider);
+              ref.refresh(partnerIdProvider);
+              ref.refresh(petNameProvider);
+              ref.refresh(userNameProvider);
+              ref.refresh(messagesStreamProvider);
+              if (dialogContext.mounted) {
+                Navigator.of(dialogContext).pop();
+              }
+            },
+          ),
+        ],
+      );
+    },
+  );
+}

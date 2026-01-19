@@ -8,12 +8,14 @@ import 'package:forever/utils/BottomNav.dart';
 import 'package:forever/utils/battery_optimization.dart';
 import 'package:forever/utils/in-app_notification.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'UI/MapPage.dart';
 import 'UI/ProfilePage.dart';
 
 class Maincontainer extends ConsumerStatefulWidget {
   const Maincontainer({super.key, this.initialIndex = 0});
+
   final int initialIndex;
 
   @override
@@ -32,55 +34,34 @@ class _MaincontainerState extends ConsumerState<Maincontainer> {
     });
 
     checkBatteryOptimization(context);
-
   }
 
   @override
   Widget build(BuildContext context) {
     int currentIndex = ref.watch(main_container_provider);
 
-    // ✅ NEW: Listen to the Firestore Stream directly
     ref.listen(messagesStreamProvider, (previous, next) {
-      next.whenData((messages) {
+      next.whenData((messages) async {
         if (previous?.hasValue == true && messages.isNotEmpty) {
-          final oldMessages = previous!.value!;
           final newMessage = messages.first;
+          final myId = ref.read(myIdProvider);
 
-          bool isNew = oldMessages.isEmpty ||
-              newMessage.timestamp.isAfter(oldMessages.first.timestamp);
-
-          if (isNew) {
-            // 3. Check if *I* sent it (we don't want notifications for our own messages)
-            final myId = ref.read(myIdProvider);
-            if (newMessage.senderId != myId) {
-
-              // 4. Finally, check if the Chat Screen is closed
-              final isChatOpen = ref.read(isChatScreenOpenProvider);
-              if (!isChatOpen) {
-                showInAppNotification(
-                  context,
-                  'New Message',
-                  newMessage.text,
-                );
-              }
+          if (newMessage.isRead == false && newMessage.senderId != myId.value) {
+            final isChatOpen = ref.read(isChatScreenOpenProvider);
+            if (!isChatOpen) {
+              showInAppNotification(context, 'New Message', newMessage.text);
             }
           }
         }
       });
     });
 
-    List<Widget> pages = <Widget>[
-      MapScreen(),
-      const ProfilePage()
-    ];
+    List<Widget> pages = <Widget>[MapScreen(), const ProfilePage()];
 
     return Scaffold(
       extendBody: true,
       backgroundColor: Colors.transparent,
-      body: IndexedStack(
-        index: currentIndex,
-        children: pages,
-      ),
+      body: IndexedStack(index: currentIndex, children: pages),
       bottomNavigationBar: BottomNavBar(
         currentIndex: currentIndex,
         onTap: (index) {

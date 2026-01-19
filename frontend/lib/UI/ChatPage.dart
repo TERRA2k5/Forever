@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:forever/models/message_model.dart';
 import 'package:forever/providers/pet_name_provider.dart';
-import '../models/message_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/chat_provider.dart';
 import '../providers/chat_state_provider.dart';
 import '../providers/id_provider.dart';
+import '../utils/message_bubble.dart';
 
 // 1. Convert to ConsumerStatefulWidget to access lifecycle methods
 class ChatScreen extends ConsumerStatefulWidget {
@@ -30,7 +32,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   void dispose() {
-    // ref.read(isChatScreenOpenProvider.notifier).state = false;
     _messageController.dispose();
     super.dispose();
   }
@@ -39,11 +40,30 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Widget build(BuildContext context) {
     ref.watch(isChatScreenOpenProvider);
     // The rest of your build logic remains exactly the same!
-    final messagesAsyncValue = ref.watch(messagesStreamProvider);
-    final myIdAsyncValue = ref.watch(myIdProvider);
-    final chatIdAsyncValue = ref.watch(chatIdProvider);
+    final messagesAsync = ref.watch(messagesStreamProvider);
+    final myIdAsync = ref.watch(myIdProvider);
+    final chatIdAsync = ref.watch(chatIdProvider);
     final colorScheme = Theme.of(context).colorScheme;
     final partnerNameAsync = ref.watch(petNameProvider);
+
+    ref.listen<AsyncValue<List<MessageModel>>>(messagesStreamProvider, (previous, next) {
+      next.whenData((messages) {
+        print('Listening for new messages in chat screen');
+        if (messages.isNotEmpty) {
+          print('New messages received');
+
+          final unseenIds = messages
+              .where((msg) => msg.senderId != myIdAsync.value && !msg.isRead)
+              .map((msg) => msg.id)
+              .toList();
+
+          if (unseenIds.isNotEmpty) {
+            print('Marking messages as seen: $unseenIds');
+            ref.read(chatRepositoryProvider).markMessagesAsSeen(chatIdAsync.value!, unseenIds);
+          }
+        }
+      });
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -59,7 +79,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       body: Column(
         children: [
           Expanded(
-            child: messagesAsyncValue.when(
+            child: messagesAsync.when(
                 data: (messages) {
                   if (messages.isEmpty) {
                     return const Center(
@@ -75,6 +95,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       ),
                     );
                   }
+                  // _saveLastActiveTimestamp(messages);
                   return ListView.builder(
                     reverse: true,
                     padding: const EdgeInsets.all(12.0),
@@ -82,8 +103,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     itemBuilder: (context, index) {
                       final message = messages[index];
                       final bool isMe =
-                          message.senderId == myIdAsyncValue.value;
-                      return _MessageBubble(message: message, isMe: isMe);
+                          message.senderId == myIdAsync.value;
+                      return MessageBubble(message: message, isMe: isMe);
                     },
                   );
                 },
@@ -143,15 +164,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       foregroundColor: colorScheme.onPrimary,
                     ),
                     icon: const Icon(Icons.send_rounded),
-                    onPressed: myIdAsyncValue.hasValue &&
-                        chatIdAsyncValue.hasValue
+                    onPressed: myIdAsync.hasValue &&
+                        chatIdAsync.hasValue
                         ? () {
                       final text = _messageController.text;
                       if (text.trim().isNotEmpty) {
                         ref.read(chatRepositoryProvider).sendMessage(
                           text,
-                          chatIdAsyncValue.value!,
-                          myIdAsyncValue.value!,
+                          chatIdAsync.value!,
+                          myIdAsync.value!,
                         );
                         _messageController.clear();
                       }
@@ -163,47 +184,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _MessageBubble extends StatelessWidget {
-  const _MessageBubble({
-    required this.message,
-    required this.isMe,
-  });
-
-  final Message message;
-  final bool isMe;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Align(
-      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
-        constraints:
-        BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
-        decoration: BoxDecoration(
-          color: isMe ? colorScheme.primary : colorScheme.surfaceVariant,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(16),
-            topRight: const Radius.circular(16),
-            bottomLeft: Radius.circular(isMe ? 16 : 0),
-            bottomRight: Radius.circular(isMe ? 0 : 16),
-          ),
-        ),
-        child: Text(
-          message.text,
-          style: textTheme.bodyLarge?.copyWith(
-            color: isMe ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
-          ),
-        ),
       ),
     );
   }

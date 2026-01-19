@@ -21,7 +21,7 @@ final chatRepositoryProvider = Provider.autoDispose<ChatRepository>((ref) {
   return ChatRepository(firestore: FirebaseFirestore.instance);
 });
 
-final messagesStreamProvider = StreamProvider.autoDispose<List<Message>>((ref) {
+final messagesStreamProvider = StreamProvider.autoDispose<List<MessageModel>>((ref) {
   final chatRepository = ref.watch(chatRepositoryProvider);
   final asyncChatId = ref.watch(chatIdProvider);
 
@@ -41,7 +41,7 @@ class ChatRepository {
 
   ChatRepository({required FirebaseFirestore firestore}) : _firestore = firestore;
 
-  Stream<List<Message>> getMessagesStream(String chatId) {
+  Stream<List<MessageModel>> getMessagesStream(String chatId) {
     return _firestore
         .collection('chats')
         .doc(chatId)
@@ -49,7 +49,22 @@ class ChatRepository {
         .orderBy('timestamp', descending: true)
         .snapshots()
         .map((snapshot) =>
-        snapshot.docs.map((doc) => Message.fromFirestore(doc)).toList());
+        snapshot.docs.map((doc) => MessageModel.fromFirestore(doc)).toList());
+  }
+
+  Future<void> markMessagesAsSeen(String chatId, List<String> messageIds) async {
+    final batch = _firestore.batch();
+
+    for (var id in messageIds) {
+      final docRef = _firestore
+          .collection('chats')
+          .doc(chatId)
+          .collection('messages')
+          .doc(id);
+
+      batch.update(docRef, {'isRead': true});
+    }
+    await batch.commit();
   }
 
   Future<void> sendMessage(String text, String chatId, String senderId) async {
@@ -59,6 +74,7 @@ class ChatRepository {
       'text': text,
       'senderId': senderId,
       'timestamp': FieldValue.serverTimestamp(),
+      'isRead': false,
     };
 
     try{

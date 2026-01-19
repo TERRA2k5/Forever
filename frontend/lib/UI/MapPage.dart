@@ -8,6 +8,7 @@ import 'package:forever/providers/partner_location_provider.dart';
 import 'package:forever/fuctions/sql_functions.dart';
 import 'package:forever/providers/pet_name_provider.dart';
 import 'package:forever/services/fcm_handler.dart';
+import 'package:forever/utils/alertboxes.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -97,7 +98,15 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (err, _) => Center(child: Text("Error partnerPosition: $err")),
             data: (partnerPosition) {
-              print("Partner Position: $partnerPosition");
+              if(partnerPosition == null){
+                print("Partner Position: $partnerPosition");
+                Future.microtask(() {
+                  if (context.mounted) {
+                    showErrorBox(context, ref);
+                  }
+                });
+                return const Center(child: CircularProgressIndicator());
+              }
               return GoogleMap(
                 zoomControlsEnabled: false,
                 initialCameraPosition: CameraPosition(
