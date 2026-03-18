@@ -12,6 +12,8 @@ import 'package:forever/utils/alertboxes.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../providers/distance_provider.dart';
+
 class MapScreen extends ConsumerStatefulWidget {
   const MapScreen({super.key});
 
@@ -22,17 +24,13 @@ class MapScreen extends ConsumerStatefulWidget {
 class _MapScreenState extends ConsumerState<MapScreen> {
   GoogleMapController? _controller;
 
-  @override
-  void initState() {
-    super.initState();
-    _updateBackend();
-  }
-
-  Future<void> _updateBackend() async {
-    final position = await ref.read(myLocationProvider.future);
-    final myId = await ref.read(myIdProvider.future);
-    if (myId != null) {
-      await saveLocation(myId, position.latitude, position.longitude);
+  // Helper to format distance nicely
+  String _formatDistance(double? meters) {
+    if (meters == null) return "Calculating...";
+    if (meters < 1000) {
+      return "${meters.toStringAsFixed(0)} m";
+    } else {
+      return "${(meters / 1000).toStringAsFixed(2)} km";
     }
   }
 
@@ -40,6 +38,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   Widget build(BuildContext context) {
     final myLocationAsync = ref.watch(myLocationProvider);
     final partnerLocationAsync = ref.watch(partnerLocationProvider);
+    final distance = ref.watch(distanceProvider);
+
     final myIcon = ref.watch(myIconProvider).maybeWhen(
       data: (icon) => icon,
       orElse: () => BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
@@ -50,6 +50,15 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       orElse: () => BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
     );
 
+
+    ref.listen(myLocationProvider, (previous, next) {
+      next.whenData((position) async {
+        final myId = ref.read(myIdProvider).value; // Assuming this is sync, or watch it
+        if (myId != null) {
+          await saveLocation(myId, position.latitude, position.longitude);
+        }
+      });
+    });
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -83,7 +92,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               icon: const Icon(Icons.chat, color: Colors.black),
               onPressed: () {
                 Navigator.push(context, MaterialPageRoute(
-                  builder: (context) => ChatScreen(),
+                  builder: (context) => const ChatScreen(),
                 ));
               },
             ),
@@ -98,48 +107,122 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (err, _) => Center(child: Text("Error partnerPosition: $err")),
             data: (partnerPosition) {
-              if(partnerPosition == null){
-                print("Partner Position: $partnerPosition");
+              if (partnerPosition == null) {
                 Future.microtask(() {
-                  if (context.mounted) {
-                    showErrorBox(context, ref);
-                  }
+                  if (context.mounted) showErrorBox(context, ref);
                 });
                 return const Center(child: CircularProgressIndicator());
               }
-              return GoogleMap(
-                zoomControlsEnabled: false,
-                initialCameraPosition: CameraPosition(
-                  target: partnerPosition != null
-                      ? LatLng(partnerPosition.latitude, partnerPosition.longitude)
-                      : LatLng(myPosition.latitude, myPosition.longitude),
-                  zoom: 15,
-                ),
-                onMapCreated: (controller) => _controller = controller,
-                markers: {
-                  Marker(
-                    markerId: const MarkerId("your_location"),
-                    icon: myIcon,
-                    position: LatLng(myPosition.latitude, myPosition.longitude),
-                    // onTap: FcmHandler().sendNotification
-                  ),
-                  if (partnerPosition != null)
-                    Marker(
-                      markerId: const MarkerId("partner_location"),
-                      icon: partnerIcon,
-                      position: LatLng(partnerPosition.latitude, partnerPosition.longitude),
-                        onTap: (){ FcmHandler().sendVibrationNotification();
 
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Vibe sent successfully!"),
-                            behavior: SnackBarBehavior.floating,
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                      }
+              final myLatLng = LatLng(myPosition.latitude, myPosition.longitude);
+              final partnerLatLng = LatLng(partnerPosition.latitude, partnerPosition.longitude);
+
+              return Stack(
+                children: [
+                  // 1. Map Layer
+                  GoogleMap(
+                    zoomControlsEnabled: false,
+                    initialCameraPosition: CameraPosition(
+                      target: partnerLatLng,
+                      zoom: 15,
                     ),
-                },
+                    onMapCreated: (controller) => _controller = controller,
+                    markers: {
+                      Marker(
+                        markerId: const MarkerId("your_location"),
+                        icon: myIcon,
+                        position: myLatLng,
+                      ),
+                      Marker(
+                        markerId: const MarkerId("partner_location"),
+                        icon: partnerIcon,
+                        position: partnerLatLng,
+                        onTap: () {
+                          FcmHandler().sendVibrationNotification();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Vibe sent successfully!"),
+                              behavior: SnackBarBehavior.floating,
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        },
+                      ),
+                    },
+                  ),
+
+                  Positioned(
+                    bottom: 90,
+                    left: 10,
+                    right: 80,
+                    child: Card(
+                      color: Colors.white.withOpacity(0.8),
+                      elevation: 8,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min, // Prevents stretching
+                            children: [
+                              Text(
+                                  'Distance between you: ${_formatDistance(distance)}',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  )
+                              ),
+                              const Text(
+                                "(Tap partner to send vibe!)",
+                                style: TextStyle(fontSize: 10, color: Colors.grey),
+                              ),
+                            ],
+                          )
+                      ),
+                    ),
+                  ),
+
+                  Positioned(
+                    bottom: 90,
+                    right: 12,
+                    child: Card(
+                      color: Colors.white.withOpacity(0.9),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shadowColor: Colors.black.withOpacity(0.15),
+                      elevation: 8,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Button: Zoom to Me
+                          IconButton(
+                            padding: const EdgeInsets.all(12),
+                            icon: Image.asset("assets/placement.png", width: 24, height: 24),
+                            tooltip: "My Location",
+                            onPressed: () {
+                              _controller?.animateCamera(
+                                CameraUpdate.newLatLngZoom(myLatLng, 15),
+                              );
+                            },
+                          ),
+                          Container(height: 1, width: 32, color: Colors.grey.shade300),
+
+                          IconButton(
+                            padding: const EdgeInsets.all(12),
+                            icon: Image.asset("assets/heart.png", width: 24, height: 24),
+                            tooltip: "Partner's Location",
+                            onPressed: () {
+                              _controller?.animateCamera(
+                                CameraUpdate.newLatLngZoom(partnerLatLng, 15),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               );
             },
           );

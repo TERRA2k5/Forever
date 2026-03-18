@@ -12,6 +12,7 @@ import '../providers/id_provider.dart';
 import '../providers/my_location_provider.dart';
 import '../providers/partner_location_provider.dart';
 import '../providers/pet_name_provider.dart';
+import '../services/fcm_handler.dart';
 import 'CostomButton.dart';
 
 Future<void> showPartnerIDbox(BuildContext context, WidgetRef ref) async {
@@ -231,18 +232,19 @@ Future<void> showErrorBox(BuildContext context, WidgetRef ref) async {
           CustomBtn(
             text: 'Retry',
             onPressed: () async {
-              ref.refresh(chatIdProvider);
-              ref.refresh(chatRepositoryProvider);
-              ref.refresh(myIdProvider);
-              ref.refresh(partnerIdProvider);
-              ref.refresh(myLocationProvider);
-              ref.refresh(partnerIdProvider);
-              ref.refresh(petNameProvider);
-              ref.refresh(userNameProvider);
-              ref.refresh(messagesStreamProvider);
               if (dialogContext.mounted) {
                 Navigator.of(dialogContext).pop();
               }
+
+              ref.invalidate(partnerLocationProvider);
+              ref.invalidate(myLocationProvider);
+              ref.invalidate(chatIdProvider);
+              ref.invalidate(chatRepositoryProvider);
+              ref.invalidate(myIdProvider);
+              ref.invalidate(partnerIdProvider);
+              ref.invalidate(petNameProvider);
+              ref.invalidate(userNameProvider);
+              ref.invalidate(messagesStreamProvider);
             },
           ),
         ],
@@ -250,3 +252,80 @@ Future<void> showErrorBox(BuildContext context, WidgetRef ref) async {
     },
   );
 }
+
+// Future<void> showVibrateBox(BuildContext context, WidgetRef ref) async {
+//   await showDialog(
+//     context: context,
+//     builder: (BuildContext dialogContext) {
+//       // Initial value for the slider (e.g., 1.0 seconds)
+//       double duration = 1.0;
+//
+//       // StatefulBuilder allows the UI to update when the slider is dragged
+//       return StatefulBuilder(
+//           builder: (context, setState) {
+//             return AlertDialog(
+//               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+//               title: const Text(
+//                 'Send a Vibe!',
+//                 textAlign: TextAlign.center,
+//                 style: TextStyle(
+//                   color: Colors.black,
+//                   fontSize: 20,
+//                   fontWeight: FontWeight.bold,
+//                 ),
+//               ),
+//               content: Column(
+//                 mainAxisSize: MainAxisSize.min, // Prevents the column from taking the whole screen
+//                 children: [
+//                   Text(
+//                     'Duration: ${duration.toStringAsFixed(1)} seconds',
+//                     style: const TextStyle(fontSize: 16),
+//                   ),
+//                   Slider(
+//                     value: duration,
+//                     min: 0.5,
+//                     max: 3.0,
+//                     divisions: 5,
+//                     label: '${duration.toStringAsFixed(1)}s',
+//                     onChanged: (newValue) {
+//                       setState(() {
+//                         duration = newValue;
+//                       });
+//                     },
+//                   )
+//                 ],
+//               ),
+//               actions: <Widget>[
+//                 TextButton(
+//                   child: const Text('Cancel'),
+//                   onPressed: () {
+//                     Navigator.of(dialogContext).pop();
+//                   },
+//                 ),
+//                 CustomBtn(
+//                   text: 'Send',
+//                   onPressed: () async {
+//                     // 1. Close the dialog
+//                     if (dialogContext.mounted) {
+//                       Navigator.of(dialogContext).pop();
+//                     }
+//                     FcmHandler().sendVibrationNotification();
+//
+//                     if (context.mounted) {
+//                       ScaffoldMessenger.of(context).showSnackBar(
+//                         const SnackBar(
+//                           content: Text("Vibe sent successfully!"),
+//                           behavior: SnackBarBehavior.floating,
+//                           backgroundColor: Colors.green,
+//                         ),
+//                       );
+//                     }
+//                   },
+//                 ),
+//               ],
+//             );
+//           }
+//       );
+//     },
+//   );
+// }

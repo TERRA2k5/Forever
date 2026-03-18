@@ -81,6 +81,8 @@ flutter:
   - assets/placement.png
   - assets/heart.png
   - assets/icon.png
+  - assets/babypink.png
+  - assets/babypink_partner.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
