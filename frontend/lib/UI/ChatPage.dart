@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:forever/UI/CallPage.dart';
 import 'package:forever/models/message_model.dart';
 import 'package:forever/providers/pet_name_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -68,11 +69,32 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     return Scaffold(
       appBar: AppBar(
         title: partnerNameAsync.when(
-          data: (partnerName) => Text(partnerName ?? 'Chat'),
+          data: (partnerName) => Align(
+            alignment: Alignment.centerLeft,
+            child: Text(partnerName ?? 'Chat', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
+          ),
           error: (err, stack) => Text('Chat Error $err'),
           loading: () => CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary)),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.call),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(
+                builder: (context) => CallScreen(channelName: chatIdAsync.value!, isVideoCall: false, isCaller: true,),
+              ));
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.video_call),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(
+                builder: (context) => CallScreen(channelName: chatIdAsync.value!, isVideoCall: true, isCaller: true,),
+              ));
+            },
+          )
+        ],
         centerTitle: true,
         elevation: 1,
       ),

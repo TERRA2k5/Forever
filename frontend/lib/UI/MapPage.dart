@@ -108,9 +108,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             error: (err, _) => Center(child: Text("Error partnerPosition: $err")),
             data: (partnerPosition) {
               if (partnerPosition == null) {
-                Future.microtask(() {
-                  if (context.mounted) showErrorBox(context, ref);
-                });
+                // Future.microtask(() {
+                //   if (context.mounted) showErrorBox(context, ref);
+                // });
                 return const Center(child: CircularProgressIndicator());
               }
 
